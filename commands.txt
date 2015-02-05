@@ -1,0 +1,12 @@
+target remote localhost:5005
+b ra139187.s:
+display/i $pc
+
+all: 
+	arm-eabi-as -g usrcode.s -o usrcode.o
+	arm-eabi-as -g ra139187.s -o ra139187.o
+
+	arm-eabi-ld usrcode.o -o usrcode -g -Ttext=0x77802000 -Tdata=0x77802100
+	arm-eabi-ld ra139187.o -o ra139187 -g --section-start=.iv=0x778005e0 -Ttext=0x77800700 -Tdata=0x77801800 -e 0x778005e0
+	mksd.sh --so ra139187 --user usrcode
+	arm-sim --rom=dumboot.bin --sd=disk.img -g
